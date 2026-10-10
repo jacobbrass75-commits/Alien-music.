@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Xeno Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand"><span class="glyph">◈</span> XENO STUDIO <small>music from no culture</small></div>
+      <div class="model-pick">
+        <select id="model" aria-label="Model"></select>
+        <button id="refresh" class="icon" title="Rescan checkpoints">↻</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="side">
+        <section class="panel">
+          <h2>Generate</h2>
+          <div id="gen"></div>
+          <button id="generate" class="primary">Generate</button>
+        </section>
+        <section class="panel">
+          <h2>Sound lab <span class="h-actions"><button id="lab-mutate" class="ghost">mutate</button><button id="lab-reset" class="ghost">reset</button></span></h2>
+          <div id="lab"></div>
+        </section>
+        <section class="panel">
+          <h2>World</h2>
+          <div id="world" class="muted">Generate something to see its world.</div>
+        </section>
+        <section class="panel">
+          <h2>Training</h2>
+          <div id="training" class="muted">…</div>
+        </section>
+      </aside>
+
+      <section class="stage">
+        <div id="stage-head"></div>
+        <div id="pieces"></div>
+      </section>
+    </main>
+
+    <footer class="mix">
+      <span class="mix-label">MIX</span>
+      <div id="mix-items"><span class="muted">Add pieces with “+ mix” to layer them.</span></div>
+      <button id="mix-play">▶ play</button>
+      <label class="check"><input type="checkbox" id="mix-loop" /> loop</label>
+      <button id="mix-wav">⬇ wav</button>
+      <button id="mix-clear" class="ghost">clear</button>
+    </footer>
+    <div id="toast" role="status"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

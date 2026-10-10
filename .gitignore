@@ -1,0 +1,5 @@
+runs/
+__pycache__/
+*.pyc
+studio/node_modules/
+studio/dist/

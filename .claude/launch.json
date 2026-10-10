@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["server.py"],
+      "port": 8765
+    },
+    {
+      "name": "studio",
+      "runtimeExecutable": "npm.cmd",
+      "runtimeArgs": ["run", "dev", "--prefix", "studio"],
+      "port": 5173
+    }
+  ]
+}
