@@ -1,0 +1,27 @@
+{
+  "env": "composer",
+  "env_kwargs": {
+    "seed": 0,
+    "surprise_weight": 4
+  },
+  "ppo": {
+    "iters": 1500,
+    "episodes_per_iter": 1,
+    "lr": 0.0003,
+    "gamma": 0.99,
+    "lam": 0.95,
+    "clip": 0.2,
+    "epochs": 4,
+    "minibatch": 2048,
+    "ent_coef": 0.01,
+    "vf_coef": 0.5,
+    "max_grad_norm": 0.5,
+    "hidden": 256,
+    "sample_every": 25,
+    "n_samples": 3,
+    "save_every": 50,
+    "keep_every": 250
+  },
+  "device": "cpu",
+  "resumed_from": null
+}

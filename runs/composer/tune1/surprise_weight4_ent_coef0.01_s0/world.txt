@@ -1,0 +1,5 @@
+Timbre: alien-0 (stretch 1.259)  partials [1.0, 2.403, 3.991, 5.711, 7.605, 9.622, 11.658]
+Ear: alien-0  s1=0.0656 s2=22.11
+Period (alien octave): ratio 2.4029 = 1518 cents
+Scale (cents above root): 0, 496, 621, 740, 879, 1116, 1235  -> 21 pitches over registers
+Tension target (normalised): 2.055
