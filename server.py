@@ -38,7 +38,7 @@ def load_ckpt(path):
 def find_ckpts():
     found = []
     for root in RUN_DIRS:
-        found += glob.glob(os.path.join(root, "**", "ckpt.pt"), recursive=True)
+        found += glob.glob(os.path.join(root, "**", "ckpt*.pt"), recursive=True)
     return sorted(set(os.path.abspath(p) for p in found))
 
 

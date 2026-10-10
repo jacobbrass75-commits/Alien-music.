@@ -29,6 +29,7 @@ class PPOConfig:
     sample_every: int = 25
     n_samples: int = 3
     save_every: int = 50
+    keep_every: int = 250  # also keep ckpt_iterNNNNN.pt snapshots (0 = off)
 
 
 class Policy(nn.Module):
@@ -147,6 +148,8 @@ def train(env, cfg, out_dir, env_kwargs, write_wav, policy=None):
                     write_wav(os.path.join(out_dir, "samples", f"iter{it:05d}_{i}.wav"), audio, sr)
             if it % cfg.save_every == 0:
                 save_checkpoint(os.path.join(out_dir, "ckpt.pt"), env, policy, env_kwargs, cfg, it)
+            if cfg.keep_every and it % cfg.keep_every == 0:
+                save_checkpoint(os.path.join(out_dir, f"ckpt_iter{it:05d}.pt"), env, policy, env_kwargs, cfg, it)
     except KeyboardInterrupt:
         print("\nInterrupted, saving checkpoint.")
     save_checkpoint(os.path.join(out_dir, "ckpt.pt"), env, policy, env_kwargs, cfg, it)

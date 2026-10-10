@@ -80,14 +80,14 @@ python render.py runs/signal/<run>/ckpt.pt     # lexicon.wav: one call per meani
 `PPOConfig` field (`alien/ppo.py`). Ctrl-C saves a checkpoint.
 
 Each run writes `config.json`, `world.txt` (the derived timbre, ear and scale), `log.jsonl`
-(one row per iteration), `samples/*.wav`, and `ckpt.pt`.
+(one row per iteration), `samples/*.wav`, `ckpt.pt` (latest), and `ckpt_iterNNNNN.pt` snapshots every `keep_every` (250) iterations.
 
 ## Xeno Studio (play with the models)
 A browser tool for using trained models. The models only output events; the studio synthesises
 them with each model's own timbre and drums, so you can reshape the sound live without retraining.
 
 ```bash
-python server.py                 # terminal 1: model backend on :8765 (finds every runs/**/ckpt.pt)
+python server.py                 # terminal 1: model backend on :8765 (finds every runs/**/ckpt*.pt)
 cd studio && npm run dev         # terminal 2: open http://localhost:5173
 ```
 (Or `cd studio && npm run build` once, after which `python server.py` alone serves it at :8765.)
