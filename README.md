@@ -115,6 +115,13 @@ cd studio && npm run dev         # terminal 2: open http://localhost:5173
 Train with no human taste anywhere, then *curate*: render many pieces, keep the ones that do
 something to you. Don't feed preferences back into the reward, or it drifts back to the middle of human taste.
 
+## Side project: hospital machines → EDM (`hospital/`)
+*Sinus Rhythm* is a 128 BPM track made only from synthesised hospital machines: IEC 60601-1-8
+alarm melodies, MRI gradient knocks, pulse-ox desaturation, ventilator breaths, a defib charge and
+shock. The machines sing it in **Telemetric**, a resonant source-filter language where the
+consonant is the machine and the vowel is the alarm pitch. Research, lexicon and sources are in
+[`hospital/README.md`](hospital/README.md). Render with `python -m hospital.song` (numpy and scipy only).
+
 ## Layout
 ```
 alien/sound.py         ear (roughness), timbres, scale derivation, synths
