@@ -91,6 +91,44 @@ In drop 2 the machines hold a conversation. Each word sits on the chord its own 
 | 49–72 | 1:30 | **Drop 2: the machines talk** | The shock lands on the downbeat. The four-word conversation runs over Am F C G, doubled an octave down and with dry alarm pulses on top for the last 8 bars. |
 | 73–84 | 2:15 | **Outro: sinus rhythm** | The drums leave and the heart settles back to 64 BPM. The ventilator whispers again, a last nurse chime plays, and the hum fades. |
 
+## 4. Shift Change: the 7 AM version (darker, harder, more bass)
+
+```bash
+python -m hospital.song_7am         # -> hospital/out/shift_change.wav + .mp3
+```
+Listen: [`renders/shift_change.mp3`](renders/shift_change.mp3). It runs at 140 BPM in C minor-ish
+(C C Ab G), with no thirds in the drone. Patients rate mornings as the worst time of day, and noise
+at shift change has been measured above 100 dBA. This track uses the machines that cause it:
+
+| machine | research | in the track |
+|---|---|---|
+| **Piezo buzzers** (bed-exit, IV-pump occlusion) | Square-wave drive at the disc's resonance, usually **2–4 kHz**, rated ~**88–95 dB** at 30 cm. One bed-exit alarm is listed at ~88 dB. | `piezo` at **3840 Hz** (= 64 × 60, a C) and 2880 Hz (G), housing rattle, hard saturation. It plays every off-beat (the most abrasive hi-hat in the building) and a two-tone bed-exit siren. |
+| **Infusion occlusion / X-ray exposure beep** | Fat square-wave beeps. | `occlusion_beep` at 1920 Hz plus its octave: triple beeps every 2 bars and an exposure BEEP on each drop. |
+| **Automatic BP cuff** (morning vitals) | A DC or diaphragm pump inflates, then the valve deflates in **~10–12 constant-pressure steps**. | `nibp_inflate`: a pump stroking at 60 Hz (the bass note again) that labours as pressure rises. The 10 `nibp_step` valve snaps land on the beat. |
+| **Pneumatic tube station** | Named as a top noise source on patient-care units. | `pneumatic_tube`: the carrier rushes up the pipe for a bar, then slams in on each drop's downbeat. |
+| **Floor scrubber** | Corridor cleaning before rounds. | `floor_scrubber`: brush rumble at ~3 rev/s, vacuum roar and motor whine. It approaches through the intro. |
+| **Portable X-ray** | The generator whines up before an exposure. | `xray_charge`: a 4-bar riser into each drop. |
+
+**Bigger bass.** The mains hum now drives a **rolling 16th-note bass**: a note on each of the three
+16ths between kicks. Each note is a bright mains-hum saw, wave-shaped, plucked through a filter,
+then shaped again, with a clean sine sub underneath. The second distortion stage keeps
+150–800 Hz loud, so the bass still comes through on phone speakers. The breakdowns use a detuned
+hum drone (`reese`). The kick is distorted and carries the heartbeat's "lub". The voices sing an
+octave lower and are driven into distortion.
+
+7 AM sources:
+[LiveScience on shift-change noise](https://www.livescience.com/10456-wham-wham-wham-sleep-ma.html),
+[FierceHealthcare: noisy hospitals](https://www.fiercehealthcare.com/healthcare/noisy-hospitals-pose-patient-safety-risks),
+[Center for Health Design (patient-care-unit noise study)](https://healthdesign.org/node/20146),
+[bed-exit alarm, ~88 dB (REHADAT)](https://www.eastin.eu/ar/searches/products/detail/database-rehadat/id-tec_137684.0),
+[piezo buzzer datasheet](https://scl.engr.uconn.edu/courses/f2015-ece3411/preliminaries/Buzzer_Datasheet.pdf),
+[McMaster panel alarms (sound levels)](https://mcmaster.com/products/panel-alarms),
+[NIBP stepped deflation (GE white paper)](https://clinicalview.gehealthcare.com/white-paper/dinamap-superstat-nibp-algorithm-carescape-patient-data-module),
+[US5285791 NIBP valve noise](https://patents.google.com/patent/US5285791A/en),
+[Arjo Flowtron ACS900 (SCD cycle)](https://www.arjo.com/en-gb/products/vte-prevention/vtedvt-prevention-pumps/flowtron-acs900).
+No source gave dB figures for floor scrubbers, X-ray generators or tube stations, so those are
+built from how the machines work rather than from measurements.
+
 ## Sources
 - IEC 60601-1-8 pulse and harmonic requirements, priority patterns, cardiac melody:
   [Digi-Key: implementing audible alarms](https://www.digikey.com/en/articles/how-to-properly-implement-audible-alarms-in-medical-monitoring),

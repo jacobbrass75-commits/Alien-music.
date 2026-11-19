@@ -307,3 +307,133 @@ def _burst(category, priority):
         i = n_(on * s16)
         out[i:i + len(x)] += x
     return out
+
+
+# ================================================================ 7 AM: the abrasive shift-change machines
+def square(freq, sec):
+    """Band-limited square (odd harmonics up to Nyquist): what a piezo driver chip outputs."""
+    f = float(freq)
+    ks = [k for k in range(1, 60, 2) if f * k < SR * 0.45]
+    return harmonics(f, sec, [1.0 / k for k in ks], ratios=ks)
+
+
+def piezo(f=3840.0, sec=0.12, drive=3.0):
+    """Piezo buzzer (bed-exit, IV-pump occlusion): square drive at the disc's 2-4 kHz resonance,
+    ~88-95 dB at 30 cm. 3840 Hz = 64 x 60 = C, 2880 Hz = G."""
+    x = square(f, sec)
+    x = x + reson(x, f, 6) * 1.5 + 0.25 * square(f / 2, sec)  # resonance ring + sub-rattle of the housing
+    x = np.tanh(drive * x) / np.tanh(drive)
+    return x * trap(len(x), 0.001, 0.004)
+
+
+def occlusion_beep(f=1920.0, sec=0.18):
+    """The fat, square 'BEEP' of an infusion pump occlusion or a portable X-ray exposure."""
+    x = square(f, sec) + 0.6 * square(f / 2, sec)
+    x = np.tanh(2.5 * x)
+    return x * trap(len(x), 0.002, 0.01)
+
+
+def nibp_inflate(sec=2.5, f=60.0):
+    """Automatic blood-pressure cuff, inflating: a linear diaphragm pump stroking at mains frequency.
+    It labours (pitch sags, grind rises) as cuff pressure climbs."""
+    n = n_(sec)
+    t = np.arange(n) / SR
+    p = t / sec
+    fr = f * (1 - 0.06 * p)
+    ph = np.cumsum(fr) / SR % 1.0
+    stroke = np.exp(-((ph - 0.15) / 0.07) ** 2)  # one hard stroke per cycle
+    rattle = hp(noise(sec), 1800) * stroke * (0.3 + 0.7 * p)
+    body = np.tanh(3 * (stroke - 0.3)) + 0.5 * np.sin(2 * np.pi * np.cumsum(fr) / SR)
+    x = body * 0.8 + rattle * 0.6
+    return x * trap(n, 0.02, 0.01) * (0.6 + 0.4 * p)
+
+
+def nibp_step():
+    """One deflation step: valve snap + a short bleed of air (monitors take ~10-12 of these)."""
+    sec = 0.16
+    t = np.arange(n_(sec)) / SR
+    snap = reson(noise(sec) * perc(len(t), 0.0003, 0.002), 900, 5) * 2.5
+    bleed = bp(noise(sec), 1500, 7000) * perc(len(t), 0.003, 0.05) * 0.5
+    return snap + bleed
+
+
+def pneumatic_tube(whoosh=1.4):
+    """Pneumatic tube station: the carrier rushing up the pipe, then a slam into the station."""
+    n = n_(whoosh)
+    t = np.arange(n) / SR
+    p = t / whoosh
+    rush = tv_filter(noise(whoosh), 250 + 2500 * p ** 2, q=1.5, kind="bp") * p ** 2
+    sec = 1.0
+    tt_ = np.arange(n_(sec)) / SR
+    slam = sine(38 + 60 * np.exp(-tt_ / 0.03), sec) * perc(len(tt_), 0.0005, 0.25)
+    metal = (reson(noise(sec) * perc(len(tt_), 0.0005, 0.004), 420, 30)
+             + reson(noise(sec) * perc(len(tt_), 0.0005, 0.004), 1130, 40) * 0.7) * 3
+    crack = bp(noise(sec), 300, 9000) * perc(len(tt_), 0.0005, 0.02)
+    hit = np.tanh(2 * (slam + metal * perc(len(tt_), 0.0005, 0.3) + crack))
+    return np.concatenate([rush * 0.6, hit])
+
+
+def floor_scrubber(sec):
+    """Floor scrubber doing the corridor before rounds: brush rumble (~3 rev/s), vacuum roar, motor whine."""
+    n = n_(sec)
+    t = np.arange(n) / SR
+    rumble = lp(noise(sec), 160) * (0.6 + 0.4 * np.sin(2 * np.pi * 3.0 * t)) * 3
+    roar = bp(noise(sec), 300, 2500) * 0.35
+    whine = harmonics(1150 * (1 + 0.004 * np.sin(2 * np.pi * 0.7 * t)), sec, [0.2, 0.08, 0.05])
+    hum = harmonics(120.0, sec, [0.5, 0.3, 0.2])
+    return rumble + roar + whine + hum
+
+
+def xray_charge(sec):
+    """Portable X-ray: the generator's rising whine before an exposure."""
+    return defib_charge(sec, f_lo=300.0, f_hi=5200.0)
+
+
+def hard_kick():
+    """A distorted industrial kick with the heartbeat's 'lub' inside it."""
+    sec = 0.5
+    t = np.arange(n_(sec)) / SR
+    f = 46 + 190 * np.exp(-t / 0.028)
+    body = sine(f, sec) * perc(len(t), 0.0008, 0.2)
+    click = hp(noise(sec), 2000) * perc(len(t), 0.0003, 0.004) * 0.5
+    lub = _thump(50, sec, 0.06) * 0.5
+    x = np.tanh(4.0 * (body + click + lub)) / np.tanh(4.0)
+    return x * perc(len(t), 0.0005, 0.22) ** 0.5
+
+
+def mains_saw(f, sec, n_harm=40):
+    """Mains hum, but bright: every harmonic of the transformer buzz, not just the first few."""
+    ks = [k for k in range(1, n_harm) if f * k < 9000]
+    amps = [1.0 / k ** 0.9 * (1.4 if k % 2 == 0 else 1.0) for k in ks]
+    return harmonics(f, sec, amps, ratios=ks)
+
+
+def rolling_bass(f, sec, cutoff=900.0, drive=3.5):
+    """One 16th of rolling bass: mains-hum saw, wave-shaped, plucked filter, plus a clean sub."""
+    x = mains_saw(f, sec) + 0.5 * mains_saw(f * 1.006, sec) + 0.4 * mains_saw(f * 2, sec)
+    x = np.tanh(drive * x * 0.6)
+    n = len(x)
+    e = perc(n, 0.002, sec * 0.45)
+    x = lp(x * e, cutoff, order=4)
+    x = np.tanh(2.0 * x)  # second stage of grit after the filter, keeps 150-800 Hz loud on small speakers
+    sub = sine(f, sec) * perc(n, 0.003, sec * 0.7)
+    return x * 0.9 + sub * 1.0
+
+
+def reese(f, sec, cutoff=400.0):
+    """Long, dark, detuned hum drone."""
+    x = mains_saw(f, sec) + mains_saw(f * 1.011, sec) + mains_saw(f * 0.993, sec)
+    x = np.tanh(1.5 * x / 3)
+    return lp(x, cutoff, order=4) + 0.6 * sine(f, sec)
+
+
+CATALOGUE.update({
+    "7am_piezo_bed_exit": lambda: np.concatenate([np.pad(piezo(f, 0.12), (0, n_(0.04)))
+                                                  for f in [3840, 2880] * 8]),
+    "7am_infusion_occlusion_beep": lambda: np.concatenate([np.pad(occlusion_beep(), (0, n_(0.12)))] * 3),
+    "7am_bp_cuff_cycle": lambda: np.concatenate([nibp_inflate(2.5)] + [np.pad(nibp_step(), (0, n_(0.35)))
+                                                                         for _ in range(10)]),
+    "7am_pneumatic_tube": lambda: pneumatic_tube(),
+    "7am_floor_scrubber": lambda: floor_scrubber(4.0) * trap(n_(4.0), 0.5, 0.5),
+    "7am_xray_charge_and_exposure": lambda: np.concatenate([xray_charge(3.0), occlusion_beep(1920, 0.6)]),
+})

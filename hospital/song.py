@@ -75,19 +75,19 @@ class Mix:
         sc = np.minimum(1.0, np.convolve(imp, kern)[: self.n])
         return sc
 
-    def master(self):
+    def master(self, drive=1.4, wet_gain=0.55, ceiling_db=-1.0):
         sc = self.sidechain()
         out = np.zeros((2, self.n))
         for k, s in self.stems.items():
             out += s * (1 - self.DUCK[k] * sc)
         wet = convolve_stereo(self.send, reverb_ir(3.2))
         wet *= (1 - 0.4 * sc)
-        out += wet * 0.55
+        out += wet * wet_gain
         out = np.vstack([hp(c, 28, order=2) for c in out])
         # gentle glue: normalise, soft-clip, normalise to -1 dBFS
         out /= np.percentile(np.abs(out), 99.9) + 1e-9
-        out = np.tanh(1.4 * out) / np.tanh(1.4)
-        out *= 10 ** (-1 / 20) / (np.abs(out).max() + 1e-9)
+        out = np.tanh(drive * out) / np.tanh(drive)
+        out *= 10 ** (ceiling_db / 20) / (np.abs(out).max() + 1e-9)
         return out
 
 
